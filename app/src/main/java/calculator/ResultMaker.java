@@ -1,20 +1,14 @@
 package calculator;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Stack;
+import java.util.StringTokenizer;
 
 public class ResultMaker {
 	
-	Stack<BigDecimal> stack = new Stack<BigDecimal>();
-	
-	
-	public void insert(String num) {
-		BigDecimal newNum = new BigDecimal(num);
-		stack.add(newNum);
-	}
-	
-	private int get_precedence(String op) {
-		if((op.equals("(")) || (op.equals("$")))
+	private int getPrecedence(String op) {
+		if((op.equals("(")) || (op.equals("EOS")))
 			return 0;
 		if((op.equals("+")) || (op.equals("-")))
 			return 1;
@@ -23,6 +17,100 @@ public class ResultMaker {
 		return -1;
 	}
 	
+	private boolean isOperand(String op) {
+		if((op.equals("+"))||(op.equals("-")))
+			return false;
+		else if((op.equals("*"))||(op.equals("/")))
+			return false;
+		else if((op.equals("%")))
+			return false;
+		else if((op.equals("(")) || (op.equals(")")))
+			return false;
+		return true;
+	}
 	
+	public String operate(String equation) {
+		
+		String ans = "";
+		
+		ArrayList<String> infix = new ArrayList<>();
+		Stack<String> stack = new Stack<String>();
+		ArrayList<String> postfix = new ArrayList<>();
+		
+		// 숫자와 연산자의 구분 
+		
+		StringTokenizer token = new StringTokenizer(equation, "+-*/%()", true);
+		while(token.hasMoreElements()) {
+			infix.add(token.nextToken());
+		}
+		
+		// infix -> postfix 로 변환
+		stack.push("EOS");
+		for(int i = 0; i < infix.size(); i ++) {
+			String target = infix.get(i);
+			if (isOperand(target)) { 
+				postfix.add(target);
+			} else {
+				if (target.equals("(")) {
+					stack.push(target);
+				}
+				else if (target.equals(")")) {
+					while (!stack.peek().equals("(")) {
+						postfix.add(stack.pop());
+					}
+					stack.pop();
+				} else
+
+				if (getPrecedence(stack.peek()) > getPrecedence(target)) { 
+					while (!stack.peek().equals("EOS")) {
+						postfix.add(stack.pop()); 
+					}
+					stack.push(target);
+				}
+				else { 
+					stack.push(target);
+				}
+			}
+		}
+		while (!stack.peek().equals("EOS")) {
+			postfix.add(stack.pop());
+		}
+		
+		// 연산 
+		float firstNum = 0; float secondNum = 0;
+		while(postfix.size() != 1) {
+			for(int i = 0; i < postfix.size(); i ++) {
+				String target = postfix.get(i);
+				if(!isOperand(target)) {
+					firstNum = Float.parseFloat(postfix.get(i-2));
+					secondNum = Float.parseFloat(postfix.get(i-1));
+					postfix.remove(i);
+					postfix.remove(i-1);
+					postfix.remove(i-2);
+					if(target.equals("+")) {
+						postfix.add(i-2, Float.toString(firstNum + secondNum));
+					} else if(target.equals("-")) {
+						postfix.add(i-2, Float.toString(firstNum - secondNum));
+					} else if(target.equals("*")) {
+						postfix.add(i-2, Float.toString(firstNum * secondNum));
+					} else if(target.equals("/")) {
+						if(secondNum == 0) {
+							;// warning
+							ans = "0";
+							return ans;
+						} else
+							postfix.add(i-2, Float.toString(firstNum / secondNum));
+					} else if(target.equals("%")) {
+						postfix.add(i-2, Float.toString(firstNum % secondNum));
+					}
+					i -= 2;
+				}
+			}
+		}
+		
+		ans = postfix.get(0);
+		
+		return ans;
+	}
 
 }
