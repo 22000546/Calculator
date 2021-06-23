@@ -1,9 +1,10 @@
 package calculator;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Stack;
 import java.util.StringTokenizer;
+
+import javax.swing.JOptionPane;
 
 public class ResultMaker {
 	
@@ -95,7 +96,7 @@ public class ResultMaker {
 						postfix.add(i-2, Float.toString(firstNum * secondNum));
 					} else if(target.equals("/")) {
 						if(secondNum == 0) {
-							;// warning
+							JOptionPane.showMessageDialog(null, "0으로 나누실 수 없습니다. 다시 시도하십시오. ");
 							ans = "0";
 							return ans;
 						} else
